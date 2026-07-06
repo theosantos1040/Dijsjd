@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOVA ARSENAL v11</title>
+  <link rel="stylesheet" href="css/nova.css">
+</head>
+<body>
+  <div class="scene">
+    <div class="scene-grid"></div>
+  </div>
+  <div class="particles" id="particles"></div>
+  <div class="scanline"></div>
+
+  <div class="nova-app">
+    <header class="nova-header">
+      <h1 class="nova-title">NOVA <span>ARSENAL</span></h1>
+      <p class="nova-subtitle">Distributed Attack Platform — v11.0.0 — GitHub Pages Edition</p>
+    </header>
+
+    <div class="dashboard">
+      <div class="panel">
+        <div class="panel-title">Controle</div>
+        <div style="margin-bottom: 20px;">
+          <label style="display:block; font-size:0.7rem; color:var(--fg-dim); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.15em;">Alvo</label>
+          <input type="text" class="nova-input" id="target" value="target-site.com" placeholder="dominio.com">
+        </div>
+        <div style="margin-bottom: 20px;">
+          <label style="display:block; font-size:0.7rem; color:var(--fg-dim); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.15em;">Intensidade</label>
+          <select class="nova-input" id="intensity">
+            <option value="low">Stealth — 50 req/s</option>
+            <option value="medium" selected>Balanced — 2k req/s</option>
+            <option value="high">Aggressive — 10k req/s</option>
+            <option value="maximum">Nuclear — 7.1k req/s × workers</option>
+          </select>
+        </div>
+        <div class="btn-group">
+          <button class="nova-btn primary" id="btn-deploy" onclick="deploy()">Iniciar</button>
+          <button class="nova-btn danger" id="btn-stop" onclick="stop()" disabled>Parar</button>
+        </div>
+        <div class="proxy-status" style="margin-top:24px;">
+          <div class="proxy-dot" id="dot-ps"></div>
+          <span class="proxy-info" id="label-ps">ProxyScrape</span>
+          <div class="proxy-dot" id="dot-gn"></div>
+          <span class="proxy-info" id="label-gn">GeoNode</span>
+          <div class="proxy-dot" id="dot-pf"></div>
+          <span class="proxy-info" id="label-pf">Proxifly</span>
+        </div>
+      </div>
+
+      <div class="panel" style="text-align:center;">
+        <div class="panel-title">Storm Metrics</div>
+        <div class="big-stat">
+          <div class="big-number" id="counter">0</div>
+          <div class="big-label">Requests Enviados</div>
+        </div>
+        <div class="progress-ring">
+          <svg width="200" height="200" viewBox="0 0 200 200">
+            <circle class="progress-ring-bg" cx="100" cy="100" r="90"/>
+            <circle class="progress-ring-fill" id="progress" cx="100" cy="100" r="90"/>
+          </svg>
+          <div class="progress-text" id="pct">0%</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
+          <div class="stat-row" style="border:none; padding:8px 0;">
+            <span class="stat-key">Taxa</span>
+            <span class="stat-val" id="rate">0/s</span>
+          </div>
+          <div class="stat-row" style="border:none; padding:8px 0;">
+            <span class="stat-key">Falhas</span>
+            <span class="stat-val danger" id="fails">0</span>
+          </div>
+          <div class="stat-row" style="border:none; padding:8px 0;">
+            <span class="stat-key">Workers</span>
+            <span class="stat-val" id="workers">0</span>
+          </div>
+          <div class="stat-row" style="border:none; padding:8px 0;">
+            <span class="stat-key">Tempo</span>
+            <span class="stat-val" id="timer">00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Métodos Ativos</div>
+        <div style="margin-bottom:20px;">
+          <div style="font-size:0.65rem; color:var(--fg-dim); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.2em;">Layer 7</div>
+          <div class="method-grid" id="l7-grid">
+            <div class="method-chip active" data-m="cf-bypass">CF-Bypass</div>
+            <div class="method-chip active" data-m="http-flood">HTTP-Flood</div>
+            <div class="method-chip" data-m="get-flood">GET-Flood</div>
+            <div class="method-chip" data-m="post-flood">POST-Flood</div>
+            <div class="method-chip" data-m="raw-flood">RAW-Flood</div>
+            <div class="method-chip" data-m="head-flood">HEAD-Flood</div>
+            <div class="method-chip" data-m="mix-flood">MIX-Flood</div>
+            <div class="method-chip" data-m="cf-uam">CF-UAM</div>
+            <div class="method-chip" data-m="http-ghost">HTTP-Ghost</div>
+            <div class="method-chip" data-m="bypass-ttl">Bypass-TTL</div>
+            <div class="method-chip" data-m="http-bypass">HTTP-Bypass</div>
+            <div class="method-chip" data-m="cf-cookie">CF-Cookie</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.65rem; color:var(--fg-dim); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.2em;">Layer 4</div>
+          <div class="method-grid" id="l4-grid">
+            <div class="method-chip" data-m="syn-flood">SYN-Flood</div>
+            <div class="method-chip" data-m="udp-flood">UDP-Flood</div>
+            <div class="method-chip" data-m="icmp-flood">ICMP-Flood</div>
+            <div class="method-chip" data-m="ack-flood">ACK-Flood</div>
+            <div class="method-chip" data-m="rst-flood">RST-Flood</div>
+            <div class="method-chip" data-m="ping-of-death">Ping-Of-Death</div>
+            <div class="method-chip" data-m="smurf">Smurf</div>
+            <div class="method-chip" data-m="fraggle">Fraggle</div>
+            <div class="method-chip" data-m="chargen-amp">Chargen-Amp</div>
+            <div class="method-chip" data-m="tcp-amp">TCP-Amp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:24px;">
+      <div class="panel-title">Log de Operações</div>
+      <div class="terminal" id="terminal">
+        <div class="terminal-line"><span class="term-time">00:00:00</span><span class="term-info">Sistema inicializado. Aguardando direção.</span></div>
+      </div>
+    </div>
+
+    <footer class="nova-footer">NOVA ARSENAL v11.0.0 — GITHUB PAGES EDITION — CLASSIFIED</footer>
+  </div>
+
+  <script src="js/proxy-loader.js"></script>
+  <script src="js/cf-evasion.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
